@@ -1,25 +1,35 @@
-# Real-Time Motion Detection & Frame Differencing Pipeline
+# Real-Time Motion Detection Pipeline (CPU & CUDA Accelerated)
 
-A high-performance computer vision and video processing pipeline built in Python to detect, isolate, and track dynamic movement across video frames with minimal CPU overhead.
+A robust computer vision pipeline built with Python and OpenCV that performs real-time background subtraction, noise reduction, and motion segmentation. It features both a CPU-bound implementation utilizing `BackgroundSubtractorMOG2` and an optional modular GPU-accelerated path via OpenCV CUDA streams (`cv2.cuda`).
 
 ---
 
 ## **System Architecture & Core Mechanisms**
 
-Standard motion detection scripts often suffer from high latency, noise sensitivity, and heavy compute costs. This engine implements an optimized multi-stage processing pipeline designed for real-time efficiency on CPU hardware.
+The pipeline processes live video streams frame-by-frame, applying spatial filtering and statistical background modeling to isolate dynamic motion from static environments with minimal computational overhead.
 
-### **1. Frame Differencing & Preprocessing**
-* **Grayscale Conversion & Gaussian Blur:** Incoming video frames are converted to grayscale to reduce dimensionality, followed by a spatial Gaussian blur to filter out high-frequency pixel noise and lighting flicker.
-* **Temporal Differencing:** Computes absolute differences between consecutive frames to isolate moving pixels from static background elements.
+### **1. Video Ingestion & Grayscale Conversion**
+* **Stream Handling:** Captures live video feeds using `cv2.VideoCapture(0)`.
+* **Dimensionality Reduction:** Converts each incoming BGR frame to single-channel grayscale (`cv2.COLOR_BGR2GRAY`) to streamline matrix computations and reduce downstream processing latency.
 
-### **2. Thresholding & Contour Extraction**
-* **Binarization:** Applies an adaptive binary threshold to separate significant motion from minor background variance.
-* **Morphological Operations:** Utilizes erosion and dilation algorithms to remove false-positive pixel fragments and close broken contours around moving objects.
-* **Bounding Box Tracking:** Identifies valid object contours and maps bounding coordinates for real-time tracking and logging.
+### **2. Spatial Filtering & Noise Suppression**
+* **Gaussian Blurring:** Applies a $7 \times 7$ Gaussian kernel (`cv2.GaussianBlur`) to smooth out high-frequency pixel noise and lighting fluctuations, preventing false-positive motion triggers.
+
+### **3. Background Subtraction & Mask Generation**
+* **MOG2 Algorithm:** Implements Mixture of Gaussians (`cv2.createBackgroundSubtractorMOG2`) to model background pixels dynamically, tracking lighting changes and adapting to stationary objects over time.
+* **Binarization:** Applies a strict binary threshold (`cv2.THRESH_BINARY`) on the foreground mask to isolate significant motion zones cleanly.
 
 ---
 
-## **Technical Stack**
+## **Technical Stack & Requirements**
 * **Core Language:** Python (3.10+)
-* **Computer Vision & Math:** OpenCV (`cv2`), NumPy, SciPy
-* **Performance:** Optimized vector operations and memory management for low-latency CPU execution
+* **Computer Vision:** OpenCV (`cv2` with optional CUDA support modules)
+* **Numerical Processing:** NumPy
+
+---
+
+## **Execution Instructions**
+
+1. Ensure dependencies are installed:
+   ```bash
+   pip install opencv-python numpy
